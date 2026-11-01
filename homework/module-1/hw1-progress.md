@@ -9,6 +9,7 @@
   - [x] `find_order`
 - [x] Part A: add at least one extra tool of my own + register in `TOOLS_BY_ROLE`
   - [x] `get_store_info` (Part B gap: store id lookup) on `_COMMON_TOOLS`
+  - [x] Retest "Where is store 8?" logged after get_store_info
 - [ ] Part B: >=10 conversations in `hw1-session.jsonl` (all 3 roles + required cases)
   - [x] Draft file: 9 shopper + 14 merchant + 5 support lines (28 total)
   - [x] Merchant ask for order 4127 (permission denial)

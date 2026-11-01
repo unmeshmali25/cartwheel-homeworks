@@ -27,7 +27,7 @@
 - [x] `uv sync` (uv 0.9.22; project uses Python 3.12 via uv)
 - [x] `uv run python -m seed.generate` -> data/cartwheel.db (dev scale) + 18 policy docs
 - [x] `.env` created from `.env.example`
-- [ ] `.env`: add OPENAI_API_KEY locally (still empty; blocks live conversations)
+- [x] `.env`: OPENAI_API_KEY set locally (live CLI conversations work)
 - [x] baseline `uv run pytest` -> 147 passed, 4 skipped, 27 xfailed
 
 ## Resolved test-suite quirk (not my code)

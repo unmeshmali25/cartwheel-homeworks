@@ -337,25 +337,25 @@ def find_order(ctx: AuthContext, query: str) -> dict[str, Any]:
     return {"ok": True, "orders": [o.to_public_dict() for o in matches[:5]]}
 
 
-# HW Part A extra tool. 
-""" 
-Testing my understanding so far: 
-- 3 roles - shopper, merchant, support
-- The get_policy() | read | all roles
-- search_products() | read | use by all roles
-- list_my_orders() | read | the scope depends on the role
-- cancel_order() | write | access matrix based on roles
-- find_order() | read | all roles 
-"""
-
-"""
-For extra tools, I could add.. 
-- lodge_complaint() tool call - write risk - for all roles with scope defined by access matrix - output is a DB write to a table and user notification of lodged complaint
-- return_product() - one or many products - write risk - output a payment confirmation (calls issue_refund) and a return shipping label. 
-- issue_refund() - write risk - partial or full - outputs dictionary {"order_id": , 
-                                                                       "amount_refunded": ,
-                                                                       "type": "partial or full", 
-                                                                       "reason": "" }
-- amount_spent_3_months(), amount_spent_1_year(), 
-- amount_saved_3_months() etc. 
-"""
+# HW Part A extra tool — student design notes (Part B gap: "Where is store 8?").
+#
+# get_store_info():
+# - Why: CLI used search_products for a store-id lookup; that tool matches
+#   store name/slug, so "8" returned not_found and the model inferred the
+#   store might not exist.
+# - What: public store metadata (id, name, etc.).
+# - Contract in (draft): store as int / digit-string / name; optional field
+#   key (address, name, ...).
+# - Contract out (draft): value for the requested key, or not found.
+# - Logic (draft): dictionary/table lookup.
+# - Invariant: always found payload or not_found / invalid_argument.
+# - Edge cases: missing store arg; non-integer like 7.6.
+#
+# Review diff vs draft (applied in implementation below):
+# - No address/location in DB. Store fields: id, name, slug, category,
+#   return_window_days_override, restocking_fee_opt_in.
+# - One `store` arg; return the full public store dict (not a single key).
+# - Resolve with db.get_store(id) or db.get_store_by_name(name/slug).
+# - All roles, read risk; register on _COMMON_TOOLS in agent/agent.py.
+# - Include effective_return_window_days (platform default vs override).
+# - Digits-only -> id lookup; bare floats like "7.6" -> invalid_argument.

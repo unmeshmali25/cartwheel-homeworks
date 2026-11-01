@@ -22,8 +22,10 @@ from typing import Any
 
 from agent import db
 from agent.auth import AuthContext, can_cancel_order, permission_denied
+from agent.config import load_facts
 from agent.helpcenter import load_policy_docs
 from agent.killswitch import kill_switch
+from seed.eligibility import effective_return_window_days
 
 MAX_SEARCH_LIMIT = 25
 DEFAULT_ORDER_LIMIT = 20
@@ -337,25 +339,79 @@ def find_order(ctx: AuthContext, query: str) -> dict[str, Any]:
     return {"ok": True, "orders": [o.to_public_dict() for o in matches[:5]]}
 
 
-# HW Part A extra tool — student design notes (Part B gap: "Where is store 8?").
-#
-# get_store_info():
-# - Why: CLI used search_products for a store-id lookup; that tool matches
-#   store name/slug, so "8" returned not_found and the model inferred the
-#   store might not exist.
-# - What: public store metadata (id, name, etc.).
-# - Contract in (draft): store as int / digit-string / name; optional field
-#   key (address, name, ...).
-# - Contract out (draft): value for the requested key, or not found.
-# - Logic (draft): dictionary/table lookup.
-# - Invariant: always found payload or not_found / invalid_argument.
-# - Edge cases: missing store arg; non-integer like 7.6.
-#
-# Review diff vs draft (applied in implementation below):
-# - No address/location in DB. Store fields: id, name, slug, category,
-#   return_window_days_override, restocking_fee_opt_in.
-# - One `store` arg; return the full public store dict (not a single key).
-# - Resolve with db.get_store(id) or db.get_store_by_name(name/slug).
-# - All roles, read risk; register on _COMMON_TOOLS in agent/agent.py.
-# - Include effective_return_window_days (platform default vs override).
-# - Digits-only -> id lookup; bare floats like "7.6" -> invalid_argument.
+# HW Part A extra tool — from Part B gap: "Where is store 8?" (search_products
+# cannot resolve a numeric store id). Design notes / review diff were captured
+# in commit history; the live contract is the docstring below.
+
+
+def get_store_info(ctx: AuthContext, store: str | int) -> dict[str, Any]:
+    """Look up public store metadata by id, name, or slug. Risk tier: read.
+
+    Every role may call this. Store directory data is public catalog metadata,
+    so there is no order-scope permission check.
+
+    Args:
+        ctx: The caller's auth context (unused for authorization).
+        store: Store id (int or digit string like "8"), exact store name, or
+            slug. Whitespace is stripped. An empty value, or a numeric string
+            that is not a plain integer (e.g. "7.6"), returns
+            {"ok": False, "error": "invalid_argument", "reason": ...}.
+
+    Returns:
+        On success: {"ok": True, "store": {"store_id": int, "name": str,
+        "slug": str, "category": str, "return_window_days_override": int | None,
+        "effective_return_window_days": int, "restocking_fee_opt_in": bool}}.
+        effective_return_window_days applies the store override when present,
+        otherwise the platform return_window_days from facts.yaml.
+        If no store matches: {"ok": False, "error": "not_found", "reason": ...}.
+
+    Implementation notes:
+        Digit-only strings use agent.db.get_store; otherwise
+        agent.db.get_store_by_name (case-insensitive name or slug).
+    """
+    raw = str(store).strip()
+    if not raw:
+        return {
+            "ok": False,
+            "error": "invalid_argument",
+            "reason": "store must be a non-empty id, name, or slug",
+        }
+    if not raw.isdigit():
+        # Reject numeric lookalikes that are not whole ids (e.g. "7.6").
+        try:
+            float(raw)
+        except ValueError:
+            pass
+        else:
+            return {
+                "ok": False,
+                "error": "invalid_argument",
+                "reason": f"store id '{raw}' is not a whole number",
+            }
+
+    with db.connection() as conn:
+        matched = (
+            db.get_store(conn, int(raw)) if raw.isdigit() else db.get_store_by_name(conn, raw)
+        )
+        if matched is None:
+            return {
+                "ok": False,
+                "error": "not_found",
+                "reason": f"no store matching '{raw}'",
+            }
+        platform_window = int(load_facts()["return_window_days"])
+        effective = effective_return_window_days(
+            platform_window, matched.return_window_days_override
+        )
+        return {
+            "ok": True,
+            "store": {
+                "store_id": matched.id,
+                "name": matched.name,
+                "slug": matched.slug,
+                "category": matched.category,
+                "return_window_days_override": matched.return_window_days_override,
+                "effective_return_window_days": effective,
+                "restocking_fee_opt_in": matched.restocking_fee_opt_in,
+            },
+        }

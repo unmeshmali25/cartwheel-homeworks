@@ -10,16 +10,18 @@
 - [x] Part A: add at least one extra tool of my own + register in `TOOLS_BY_ROLE`
   - [x] `get_store_info` (Part B gap: store id lookup) on `_COMMON_TOOLS`
   - [x] Retest "Where is store 8?" logged after get_store_info
-- [ ] Part B: >=10 conversations in `hw1-session.jsonl` (all 3 roles + required cases)
-  - [x] Draft file: 9 shopper + 14 merchant + 5 support lines (28 total)
+- [x] Part B: >=10 conversations in `hw1-session.jsonl` (all 3 roles + required cases)
+  - [x] 31 records: shopper 10, merchant 14, support 7
   - [x] Merchant ask for order 4127 (permission denial)
   - [x] Policy-override case (Juniper 14 vs platform 30)
   - [x] Support role conversations
   - [x] Support email-change: before (no escalate) + after prompt revision (escalate_to_human)
   - [x] Part C: SYSTEM_PROMPT_TEMPLATE Escalation updated for ESC-2 account changes
-- [ ] Part C: prompt investigation (revise `agent/agent.py` only with evidence)
-- [ ] Video (<=5 min, one continuous screen recording)
-- [ ] Run focused + regression tests
+- [x] Part C: prompt investigation (revise `agent/agent.py` only with evidence)
+- [ ] Video (<=5 min, one continuous screen recording) — skipped for now
+- [x] Run focused + regression tests
+  - [x] `uv run pytest --runxfail tests/test_hw_holes.py -k hw1` → 8 passed (offline)
+  - [x] `uv run pytest tests/test_agent_tools.py tests/test_auth.py tests/test_eligibility.py` → 24 passed (offline)
 
 ## Setup
 - [x] `uv sync` (uv 0.9.22; project uses Python 3.12 via uv)

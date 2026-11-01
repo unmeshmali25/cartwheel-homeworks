@@ -19,6 +19,7 @@
   - [x] Part C: SYSTEM_PROMPT_TEMPLATE Escalation updated for ESC-2 account changes
 - [x] Part C: prompt investigation (revise `agent/agent.py` only with evidence)
 - [ ] Video (<=5 min, one continuous screen recording) — skipped for now
+  - Script: As shopper `1`, show order **4127** (authorized), then as merchant `9002` show **4127** denied; as shopper refund **4455** (queued above $100). Open `agent/agent.py` Escalation edit and the ESC-2 before/after lines in `hw1-session.jsonl`, run `uv run pytest --runxfail tests/test_hw_holes.py -k hw1`, then `wc -l hw1-session.jsonl` (31).
 - [x] Run focused + regression tests
   - [x] `uv run pytest --runxfail tests/test_hw_holes.py -k hw1` → 8 passed (offline)
   - [x] `uv run pytest tests/test_agent_tools.py tests/test_auth.py tests/test_eligibility.py` → 24 passed (offline)

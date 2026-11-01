@@ -47,13 +47,11 @@
 
 ## Status log
 - Step 1 orientation: DONE. Repo/spec/agent relationship clear.
-- Step 2 environment: DONE except the model key.
+- Step 2 environment: DONE (OPENAI_API_KEY set; live chats work).
 - Part A: all 5 tools implemented and passing.
   `uv run pytest --runxfail tests/test_hw_holes.py -k hw1` -> 8 passed.
   Regression `tests/test_agent_tools.py tests/test_auth.py tests/test_eligibility.py` -> 24 passed.
   Full suite -> 147 passed, 4 skipped, 19 xfailed, 8 xpassed.
-- Next: Part A extra tool (should come from a Part B gap) and Part B conversations,
-  which need OPENAI_API_KEY in `.env`.
 - Learning mode: SPEC-FIRST. User writes md specs; agent critiques decomposition only;
   code generated at handover. Agent handles terminal commands.
-- Next: implement `search_products`.
+- HW1 code/session/tests complete; video skipped for now.

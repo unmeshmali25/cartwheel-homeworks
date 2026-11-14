@@ -47,19 +47,31 @@ HW2 video deferred; HW2 endpoints + cartwheel.* spans already implemented (no re
 
 ## Approved dimension plan (Part A) — student approved 2026-11-14
 
-| Dimension | Values |
-| --- | --- |
-| role | shopper, merchant, support |
-| mutation (read vs write) | read, write |
-| info_source | database_record, policy_docs, mixed, none |
-| intent | order_status, refund, cancellation, policy_question, product_search, dispute, escalation, out_of_scope |
-| record_state | order_in_window, order_past_window, order_above_threshold, order_pre_ship, order_damaged_dq, product, store_policy_page, none |
-| applicable_policy | platform_rule, store_override, none |
-| tools_needed | none, one_lookup, several_calls |
-| difficulty | well_specified, ambiguous, missing_information, boundary, auth_boundary |
-| user_style | 8 validator styles |
-| scenario_group | coverage \| challenge |
-| turn_count | 1 + followups (not a free dial) |
+Revised after review (exact `user_style` values; split order vs product DQ; reasons column).
+
+| Dimension | Values | Reason (SPEC / data) |
+| --- | --- | --- |
+| role | shopper, merchant, support | AUTH-1: permissions and visible rows differ by role |
+| mutation | read, write | Write tools change state / hit refund threshold & approvals; reads do not (SPEC tools + ESC-1) |
+| info_source | database_record, policy_docs, mixed, none | Authoritative answers come from SQL vs policy docs (`facts.yaml` / help center); none for out-of-scope |
+| intent | order_status, refund, cancellation, policy_question, product_search, dispute, escalation, out_of_scope | Different intents exercise different tools and SCOPE / ESC rules |
+| record_state | order_in_window, order_past_window, order_above_threshold, order_pre_ship, order_damaged_dq, product, product_damaged_dq, store_policy_page, none | Extra metadata depends on real order/product/policy rows; DQ split: orders 8001–8003 vs products 2–4 |
+| applicable_policy | platform_rule, store_override, none | Store overrides can beat platform return window (`facts.yaml` store_overrides) |
+| tools_needed | none, one_lookup, several_calls | Path length differs (refuse vs single lookup vs get_order+refund) |
+| difficulty | well_specified, ambiguous, missing_information, boundary, auth_boundary | Challenge edges: vague asks, missing facts, $100/day-30 boundaries, cross-role access |
+| user_style | `neutral_conversational`, `terse_fragmentary`, `typo_heavy`, `confused_rambling`, `frustrated_impatient`, `repetitive_pressuring`, `operational_shorthand`, `requests_short_plain_answer` | Validator exact-match set (`scenarios/validate.py`); RESP tone must hold across styles |
+| scenario_group | coverage, challenge | Handout: report pools separately; challenge holds DQ + hard edges |
+| turn_count | 1–25 (= 1 + followups) | Multi-turn corrections; not a free-form dial — set via followups list |
+
+### DQ generation rule (explicit)
+
+- Order DQ cases (`dq-order-*`): `record_state=order_damaged_dq`, set `tuple.order_id` to the case `entity_id`, `data_quality_case_id` = case id, `scenario_group=challenge`.
+- Product DQ cases (`dq-product-*`): `record_state=product_damaged_dq`, set `tuple.product_id` to the case `entity_id`, same challenge/objective source rules.
+- Final set: exactly **5** scenarios per each of the six cases (`validate.py --final`).
+
+### Note on mutation / info_source vs intent
+
+`mutation` and `info_source` are planning lenses so coverage is not all “read order status.” In JSONL they must stay consistent with `intent` + `tools_needed` (e.g. refund → write + mixed; policy_question → read + policy_docs; out_of_scope → read + none).
 
 ## Next
 

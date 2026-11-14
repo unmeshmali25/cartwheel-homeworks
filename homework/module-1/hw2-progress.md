@@ -13,7 +13,7 @@ Interactive walkthrough of `homework/module-1/hw2.md`.
   - [x] Student inspected merchant 4127 tool span (`permission_denied=true`, role/user/store set)
 - [x] Two prompt versions compared (Part F)
 - [x] `hw2-traces.json` (exactly two traces)
-- [ ] Video (student records; leave to student)
+- [ ] Video (student records; deferred to later — not blocking HW3)
 
 ## Done
 

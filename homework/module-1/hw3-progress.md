@@ -5,7 +5,7 @@ HW2 video deferred; HW2 endpoints + cartwheel.* spans already implemented (no re
 
 ## Deliverables checklist
 
-- [ ] `scenarios/pilot_scenarios.jsonl`
+- [x] `scenarios/pilot_scenarios.jsonl` (30; validated; awaiting sample review before run)
 - [ ] `scenarios/pilot-results.jsonl`
 - [ ] `scenarios/pilot_review.jsonl` (≥10 reviewed, ≥5 confirmed failures)
 - [ ] `scenarios/support_scenarios.jsonl` (175 coverage + 75 challenge)
@@ -73,6 +73,9 @@ Revised after review (exact `user_style` values; split order vs product DQ; reas
 
 `mutation` and `info_source` are planning lenses so coverage is not all “read order status.” In JSONL they must stay consistent with `intent` + `tools_needed` (e.g. refund → write + mixed; policy_question → read + policy_docs; out_of_scope → read + none).
 
+- Step 3: Generated `scenarios/pilot_scenarios.jsonl` (20 coverage + 10 challenge; all roles; 6 DQ cases once each).
+  - Validator: `uv run python -m scenarios.validate scenarios/pilot_scenarios.jsonl` → 30 records OK.
+
 ## Next
 
-- Step 3: Part B — generate `scenarios/pilot_scenarios.jsonl` (30 scenarios) using the skill; validate; then run (separate go).
+- Step 4: Student reviews conversation sample (skill gate) — then go to reset DB + run pilot.
